@@ -171,9 +171,73 @@ body {
     .q-img { max-height: 200px; }
     .signs-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
 }
+
+/* 添加到主屏幕引导弹窗 */
+.a2hs-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    display: none; align-items: center; justify-content: center;
+    z-index: 9999; padding: 20px;
+}
+.a2hs-overlay.show { display: flex; }
+.a2hs-card {
+    background: white; border-radius: 16px; padding: 28px 24px;
+    max-width: 360px; width: 100%; text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    animation: a2hs-pop 0.25s ease;
+}
+@keyframes a2hs-pop {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.a2hs-icon {
+    width: 84px; height: 84px; border-radius: 20px;
+    margin: 0 auto 16px; display: block;
+    box-shadow: 0 4px 12px rgba(30,58,138,0.25);
+}
+.a2hs-title { font-size: 20px; font-weight: bold; color: #1e3a8a; margin-bottom: 6px; }
+.a2hs-desc { font-size: 14px; color: #555; margin-bottom: 18px; }
+.a2hs-steps { text-align: left; display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px; }
+.a2hs-step { display: flex; gap: 12px; align-items: flex-start; }
+.a2hs-step-num {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+    background: #3b82f6; color: white; font-size: 14px; font-weight: bold;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+}
+.a2hs-step-text { font-size: 15px; line-height: 1.5; color: #333; }
+.a2hs-share-ico {
+    display: inline-flex; vertical-align: middle; margin-left: 4px;
+}
+.a2hs-close {
+    width: 100%; padding: 13px; border: none; border-radius: 10px;
+    background: #e5e7eb; color: #374151; font-size: 15px; cursor: pointer;
+}
+.a2hs-close:hover { background: #d1d5db; }
 </style>
 </head>
 <body>
+<!-- 添加到主屏幕引导弹窗 -->
+<div class="a2hs-overlay" id="a2hsOverlay">
+    <div class="a2hs-card">
+        <img class="a2hs-icon" src="./apple-touch-icon-v2.png" alt="题库图标">
+        <div class="a2hs-title">添加到主屏幕</div>
+        <div class="a2hs-desc">按下面步骤，把题库添加到桌面</div>
+        <div class="a2hs-steps">
+            <div class="a2hs-step">
+                <div class="a2hs-step-num">1</div>
+                <div class="a2hs-step-text">点 Safari 底部分享按钮（方框带向上箭头）<svg class="a2hs-share-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M7 8l5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg></div>
+            </div>
+            <div class="a2hs-step">
+                <div class="a2hs-step-num">2</div>
+                <div class="a2hs-step-text">在菜单栏中向下滑动，点「添加到主屏幕」</div>
+            </div>
+            <div class="a2hs-step">
+                <div class="a2hs-step-num">3</div>
+                <div class="a2hs-step-text">确认为题库，点右上角「添加」</div>
+            </div>
+        </div>
+        <button class="a2hs-close" onclick="closeA2hs()">知道了</button>
+    </div>
+</div>
 <div class="container">
     <div class="header">
         <h1 id="mainTitle">北卡州駕照中文考題練習</h1>
@@ -690,6 +754,24 @@ function resetProgress() {
         wrongBook.clear(); localStorage.removeItem('wrongBook'); updateWrongCount(); alert('已重置！');
     }
 }
+// 添加到主屏幕引导弹窗
+function closeA2hs() {
+    document.getElementById('a2hsOverlay').classList.remove('show');
+    try { localStorage.setItem('a2hsPromptDismissed', '1'); } catch(e) {}
+}
+(function showA2hsPrompt() {
+    // 已添加到主屏幕（standalone 模式）则不弹
+    var isStandalone = window.navigator.standalone === true ||
+        window.matchMedia('(display-mode: standalone)').matches;
+    if (isStandalone) return;
+    // 用户点过「知道了」则不再提示
+    var dismissed = false;
+    try { dismissed = localStorage.getItem('a2hsPromptDismissed') === '1'; } catch(e) {}
+    if (dismissed) return;
+    setTimeout(function() {
+        document.getElementById('a2hsOverlay').classList.add('show');
+    }, 800);
+})();
 init();
 </script>
 </body>
